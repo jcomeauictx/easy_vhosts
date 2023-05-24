@@ -2,7 +2,9 @@ DIRECTORY_ROOTS := $(wildcard /var/www/*.*)
 NULLSTR :=
 SPACE := $(NULLSTR) $(NULLSTR)
 COMMA := ,
-DOMAINLIST := $(subst $(SPACE),$(COMMA),$(notdir $(DIRECTORY_ROOTS)))
-CERTNAME := $(shell basename $$(readlink /var/www/default))
-certbot: /var/www/$(CERTNAME)/index.html
+DOMAINLIST := $(notdir $(DIRECTORY_ROOTS))
+DOMAINLIST += $(addprefix www.,$(DOMAINLIST))
+DOMAINLIST := $(subst $(SPACE),$(COMMA),$(DOMAINLIST))
+CERTNAME := certbot_cert
+certbot:
 	sudo $@ certonly --apache --certname $(CERTNAME) -d $(DOMAINLIST)
