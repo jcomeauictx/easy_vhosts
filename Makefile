@@ -8,19 +8,22 @@ DOMAINLIST := $(notdir $(DIRECTORY_ROOTS))
 DOMAINLIST += $(addprefix www.,$(DOMAINLIST))
 DOMAINLIST := $(subst $(SPACE),$(COMMA),$(DOMAINLIST))
 CERTNAME := certbot_cert
-DRYRUN ?= --dry-run
 all: deploy $(ENABLE)/easy_vhosts.conf certbot $(ENABLE)/easy_ssl_vhosts.conf
 deploy:
-	rsync -avuz $(DRYRUN) \
-	 easy_vhosts.conf \
-	 easy_ssl_vhosts.conf \
-	 root@easy-vhosts:$(CONF)/ || \
-	echo Must alias your server IP address to easy-vhosts in /etc/hosts >&2
+	if grep '\<easy-vhosts\>' /etc/aliases; then \
+	 true; \
+	else \
+	 echo Alias your server IP address to easy-vhosts in /etc/hosts >&2; \
+	 false;
+	fi
 certbot:
-	sudo $@ certonly --apache --certname $(CERTNAME) -d $(DOMAINLIST)
+	ssh root@vhosts $@ certonly \
+	 --apache \
+	 --certname $(CERTNAME) \
+	 -d $(DOMAINLIST)
 $(CONF)/%: %
-	cat $< | sudo tee $@ > /dev/null
+	rsync -avuz $* root@easy-vhosts:$(CONF)/
 $(ENABLE)/%: $(CONF)/%
-	cd $(@D) && sudo ln -s ../$(notdir $(CONF))/$* .
-	sudo systemctl restart apache2
+	ssh root@easy-vhosts cd $(@D) && sudo ln -s ../$(notdir $(CONF))/$* .
+	ssh root@easy-vhosts sudo systemctl restart apache2
 .PRECIOUS: $(CONF)/%
