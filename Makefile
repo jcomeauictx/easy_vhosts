@@ -10,7 +10,9 @@ DOMAINLIST := $(subst $(SPACE),$(COMMA),$(DOMAINLIST))
 CERTNAME := certbot_cert
 all: $(ENABLE)/easy_vhosts.conf certbot $(ENABLE)/easy_ssl_vhosts.conf
 certbot:
-	sudo $@ certonly --apache --certname $(CERTNAME) -d $(DOMAINLIST)
+	# first remove ssl conf
+	sudo rm -f $(ENABLE)/easy_ssl_vhosts.conf
+	sudo $@ certonly --apache --cert-name $(CERTNAME) -d $(DOMAINLIST)
 $(CONF)/%: %
 	cat $< | sudo tee $@ > /dev/null
 $(ENABLE)/%: $(CONF)/%
