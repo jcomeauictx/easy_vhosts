@@ -9,12 +9,14 @@ DOMAINLIST += $(addprefix www.,$(DOMAINLIST))
 DOMAINLIST := $(subst $(SPACE),$(COMMA),$(DOMAINLIST))
 CERTNAME := certbot_cert
 DRYRUN ?= --dry-run
+SERVER ?= $(shell getent easy-vhosts | awk '{print $$1}')
 all: deploy $(ENABLE)/easy_vhosts.conf certbot $(ENABLE)/easy_ssl_vhosts.conf
 deploy:
 	rsync -avuz $(DRYRUN) \
 	 easy_vhosts.conf \
 	 easy_ssl_vhosts.conf \
-	 root@easy-vhosts:$(CONF)/ || \
+	 root@easy-vhosts:$(CONF)/
+error:
 	echo Must alias your server IP address to easy-vhosts in /etc/hosts >&2
 certbot:
 	sudo $@ certonly --apache --certname $(CERTNAME) -d $(DOMAINLIST)
