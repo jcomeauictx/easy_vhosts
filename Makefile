@@ -10,13 +10,10 @@ DOMAINLIST := $(subst $(SPACE),$(COMMA),$(DOMAINLIST))
 CERTNAME := certbot_cert
 all: $(ENABLE)/easy_vhosts.conf certbot $(ENABLE)/easy_ssl_vhosts.conf
 certbot:
-	ssh root@vhosts $@ certonly \
-	 --apache \
-	 --certname $(CERTNAME) \
-	 -d $(DOMAINLIST)
+	sudo $@ certonly --apache --certname $(CERTNAME) -d $(DOMAINLIST)
 $(CONF)/%: %
-	rsync -avuz $* root@easy-vhosts:$(CONF)/
+	cat $< | sudo tee $@ > /dev/null
 $(ENABLE)/%: $(CONF)/%
-	ssh root@easy-vhosts cd $(@D) && sudo ln -s ../$(notdir $(CONF))/$* .
-	ssh root@easy-vhosts sudo systemctl restart apache2
+	cd $(@D) && sudo ln -s ../$(notdir $(CONF))/$* .
+	sudo systemctl restart apache2
 .PRECIOUS: $(CONF)/%
