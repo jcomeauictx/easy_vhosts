@@ -16,6 +16,6 @@ certbot:
 $(CONF)/%: %
 	cat $< | sudo tee $@ > /dev/null
 $(ENABLE)/%: $(CONF)/%
-	cd $(@D) && sudo ln -s ../$(notdir $(CONF))/$* .
+	cd $(@D) && sudo ln -sf ../$(notdir $(CONF))/$* .
 	sudo systemctl restart apache2
 .PRECIOUS: $(CONF)/%
