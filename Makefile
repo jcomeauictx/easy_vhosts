@@ -10,7 +10,11 @@ DOMAINLIST := $(subst $(SPACE),$(COMMA),$(DOMAINLIST))
 CERTNAME := certbot_cert
 all: $(ENABLE)/easy_vhosts.conf certbot $(ENABLE)/easy_ssl_vhosts.conf
 certbot:
-	# first remove ssl conf
+	# make sure mod_vhost_alias and ssl are enabled
+	# (should not error if they already are)
+	sudo a2enmod vhost_alias ssl
+	sudo systemctl restart apache2
+	# remove ssl conf
 	sudo rm -f $(ENABLE)/easy_ssl_vhosts.conf
 	sudo $@ certonly --apache --cert-name $(CERTNAME) -d $(DOMAINLIST)
 $(CONF)/%: %
