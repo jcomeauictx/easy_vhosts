@@ -8,6 +8,9 @@ DOMAINLIST := $(notdir $(DIRECTORY_ROOTS))
 DOMAINLIST += $(addprefix www.,$(DOMAINLIST))
 DOMAINLIST := $(subst $(SPACE),$(COMMA),$(DOMAINLIST))
 CERTNAME := certbot_cert
+ifneq ($(SHOWENV),)
+export
+endif
 all: $(ENABLE)/easy_vhosts.conf certbot $(ENABLE)/easy_ssl_vhosts.conf
 certbot:
 	# make sure mod_vhost_alias and ssl are enabled
@@ -23,3 +26,9 @@ $(ENABLE)/%: $(CONF)/%
 	cd $(@D) && sudo ln -sf ../$(notdir $(CONF))/$* .
 	sudo systemctl restart apache2
 .PRECIOUS: $(CONF)/%
+env:
+ifneq ($(SHOWENV),)
+	$@
+else
+	$(MAKE) SHOWENV=1 $@
+endif
