@@ -1,11 +1,13 @@
-DIRECTORY_ROOTS := $(wildcard /var/www/*.*)
+DIRECTORY_ROOTS := $(foreach root,\
+ $(wildcard /var/www/*.*),\
+ $(shell readlink -f $(root)))
 CONF := /etc/apache2/conf-available
 ENABLE := $(CONF:-available=-enabled)
 NULLSTR :=
 SPACE := $(NULLSTR) $(NULLSTR)
 COMMA := ,
 DOMAINLIST := $(notdir $(DIRECTORY_ROOTS))
-DOMAINLIST += $(addprefix www.,$(DOMAINLIST))
+DOMAINLIST += $(filter-out $(EXCEPTIONS),$(addprefix www.,$(DOMAINLIST)))
 DOMAINLIST := $(subst $(SPACE),$(COMMA),$(DOMAINLIST))
 CERTNAME := certbot_cert
 ifneq ($(SHOWENV),)
