@@ -27,10 +27,14 @@ $(CONF)/%: %
 $(ENABLE)/%: $(CONF)/%
 	cd $(@D) && sudo ln -sf ../$(notdir $(CONF))/$* .
 	sudo systemctl restart apache2
-.PRECIOUS: $(CONF)/%
+mailman3:
+	sudo cp mailman3.conf /etc/apache2/conf-enabled/
+	a2enmod proxy proxy_uwsgi
+	systemctl restart apache2
 env:
 ifneq ($(SHOWENV),)
 	$@
 else
 	$(MAKE) SHOWENV=1 $@
 endif
+.PRECIOUS: $(CONF)/%
